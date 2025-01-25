@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Category table
+model ProductCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique // Ensuring unique names for categories
+  description String?
+  img         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation to Product
+  products Product[] // One-to-Many relationship with Product
+}
+
+// Product table
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  img         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Foreign key to ProductCategory
+  categoryId String
+  category   ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // Relation to Order
+  orders Order[] // One-to-Many relationship with Order
+}
+
+// Transaction table
+model Transaction {
+  id          String   @id @default(cuid())
+  totalAmount Float // Total amount for the transaction
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  //user delivery data
+  email     String
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
+  deliveryDate DateTime
+  status    String
+  // Relation to Order
+  orders Order[] // One-to-Many relationship with Order
+}
+
+// Address table
+model Address {
+  id          String        @id @default(cuid())
+  email       String        @unique
+  street      String
+  city        String
+  zipCode     String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Transaction Transaction[]
+}
+
+// Order table
+model Order {
+  id        String   @id @default(cuid())
+  quantity  Int // Quantity of the product in the order
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign key to Product
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Foreign key to Transaction
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+}

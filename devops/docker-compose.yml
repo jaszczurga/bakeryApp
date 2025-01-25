@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+      POSTGRES_DB: bakery-app
+    volumes:
+      - bakery-app:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - "4566:4566"  # Main LocalStack endpoint for AWS services
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DATA_DIR=/var/lib/localstack
+      - AWS_DEFAULT_REGION=us-east-1
+      - HOSTNAME_EXTERNAL=localhost
+    volumes:
+      - "./localstack/init-scripts:/etc/localstack/init/ready.d/"
+      - localstack-data:/var/lib/localstack
+
+volumes:
+  bakery-app:
+  localstack-data:
+
+networks:
+  default:
+    name: app-network
